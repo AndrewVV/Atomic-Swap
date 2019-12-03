@@ -3,7 +3,7 @@ pragma solidity 0.5.10;
 contract AtomicSwap {
 
     struct Swap {
-        bytes20 hashedSecret;
+        bytes32 hashedSecret;
         bytes32 secret;
         uint initTimestamp;
         uint refundTime;
@@ -15,19 +15,19 @@ contract AtomicSwap {
         bool initiated;
     }
 
-    mapping(bytes20 => Swap) public swaps;
+    mapping(bytes32 => Swap) public swaps;
 
     event Refunded(
-        bytes20 indexed _hashedSecret,
+        bytes32 indexed _hashedSecret,
         uint _refundTime
     );
     event Redeemed(
-        bytes20 indexed _hashedSecret,
+        bytes32 indexed _hashedSecret,
         bytes32 _secret,
         uint _redeemTime
     );
     event Initiated(
-        bytes20 indexed _hashedSecret,
+        bytes32 indexed _hashedSecret,
         uint _initTimestamp,
         uint _refundTime,
         address indexed _participant,
@@ -38,31 +38,32 @@ contract AtomicSwap {
     constructor() public {
     }
 
-    modifier isRefundable(bytes20 _hashedSecret) {
+    modifier isRefundable(bytes32 _hashedSecret) {
         require(block.timestamp > swaps[_hashedSecret].initTimestamp + swaps[_hashedSecret].refundTime, "refundTime has not come");
         _;
     }
 
-    modifier isRedeemable(bytes20 _hashedSecret, bytes32 _secret) {
+    modifier isRedeemable(bytes32 _hashedSecret, bytes32 _secret) {
         require(block.timestamp <= swaps[_hashedSecret].initTimestamp + swaps[_hashedSecret].refundTime, "refundTime has already come");
-        // require(sha256(abi.encodePacked(sha256(abi.encodePacked(_secret)))) == _hashedSecret, "secret is not correct");
-        require(ripemd160(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct");
+        // require(sha256(abi.encodePacked(sha256(abi.encodePacked(_secret)))) == _hashedSecret, "secret is not correct"); // 2SHA
+        require(sha256(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct"); // SHA
+        // require(ripemd160(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct");
         _;
     }
 
-    modifier isInitiated(bytes20 _hashedSecret) {
+    modifier isInitiated(bytes32 _hashedSecret) {
         require(swaps[_hashedSecret].emptied == false, "swap for this hash is already emptied");
         require(swaps[_hashedSecret].initiated == true, "no initiated swap for such hash");
         _;
     }
 
-    modifier isInitiatable(bytes20 _hashedSecret) {
+    modifier isInitiatable(bytes32 _hashedSecret) {
         require(swaps[_hashedSecret].emptied == false, "swap for this hash is already emptied");
         require(swaps[_hashedSecret].initiated == false, "swap for this hash is already initiated");
         _;
     }
 
-    function initiate (bytes20 _hashedSecret, uint _refundTime, address payable _participant)
+    function initiate (bytes32 _hashedSecret, uint _refundTime, address payable _participant)
     public payable isInitiatable(_hashedSecret) {
         
         swaps[_hashedSecret].hashedSecret = _hashedSecret;
@@ -83,7 +84,7 @@ contract AtomicSwap {
         );
     }
 
-    function redeem(bytes20 _hashedSecret, bytes32 _secret) public isInitiated(_hashedSecret) isRedeemable(_hashedSecret, _secret) {
+    function redeem(bytes32 _hashedSecret, bytes32 _secret) public isInitiated(_hashedSecret) isRedeemable(_hashedSecret, _secret) {
         swaps[_hashedSecret].emptied = true;
         swaps[_hashedSecret].secret = _secret;
 
@@ -96,7 +97,7 @@ contract AtomicSwap {
         swaps[_hashedSecret].participant.transfer(swaps[_hashedSecret].value);
     }
 
-    function refund(bytes20 _hashedSecret) public isInitiated(_hashedSecret) isRefundable(_hashedSecret) {
+    function refund(bytes32 _hashedSecret) public isInitiated(_hashedSecret) isRefundable(_hashedSecret) {
         swaps[_hashedSecret].emptied = true;
         swaps[_hashedSecret].initiated = false;
 
@@ -150,11 +151,11 @@ contract AtomicSwap {
         return block.timestamp+3600;
     }
     
-    function getBalanceSwap(bytes20 _hashedSecret) public view returns (uint256) {
+    function getBalanceSwap(bytes32 _hashedSecret) public view returns (uint256) {
         return swaps[_hashedSecret].value;
     }
     
-    function getSecretSwap(bytes20 _hashedSecret) public view returns (bytes32) {
+    function getSecretSwap(bytes32 _hashedSecret) public view returns (bytes32) {
         return swaps[_hashedSecret].secret;
     }
 }

@@ -47,42 +47,42 @@ let outputAmount = 500000;
 let to = 'mjYWRYYJxQ8oPz8obovrDbcEyd4EwLufgy';
 let amount = 490000
 
-    // СОЗДАНИЕ МУЛЬТИСИГ АДРЕСА 2 ИЗ 3k
-    let publicKeys = [publicKey1,publicKey2,publicKey3];  
-    var address = new bitcore.Address(publicKeys, requiredSignatures, testnet);
-    console.log(address)
-    console.log("Create multisig address = ",address.toString())
-    // ОТПРАВКА МУЛЬТИСИГ ТРАНЗАКЦИИ
-    var privateKeys = [
-        new bitcore.PrivateKey(privateKey1),
-        new bitcore.PrivateKey(privateKey2)
-    ];
-    var address = new bitcore.Address(publicKeys, 2, testnet); // 2 of 2
-    console.log(address) 
+    // // СОЗДАНИЕ МУЛЬТИСИГ АДРЕСА 2 ИЗ 3k
+    // let publicKeys = [publicKey1,publicKey2,publicKey3];  
+    // var address = new bitcore.Address(publicKeys, requiredSignatures, testnet);
+    // console.log(address)
+    // console.log("Create multisig address = ",address.toString())
+    // // ОТПРАВКА МУЛЬТИСИГ ТРАНЗАКЦИИ
+    // var privateKeys = [
+    //     new bitcore.PrivateKey(privateKey1),
+    //     new bitcore.PrivateKey(privateKey2)
+    // ];
+    // var address = new bitcore.Address(publicKeys, 2, testnet); // 2 of 2
+    // console.log(address) 
       
-    var utxo = {
-        txId,
-        outputIndex,
-        "address" : address.toString(),
-        "script" : new bitcore.Script(address).toHex(),
-        "satoshis" : outputAmount
-    };
+    // var utxo = {
+    //     txId,
+    //     outputIndex,
+    //     "address" : address.toString(),
+    //     "script" : new bitcore.Script(address).toHex(),
+    //     "satoshis" : outputAmount
+    // };
       
-    var transaction = new bitcore.Transaction()
-        .from(utxo, publicKeys, 2)
-        .to(to, amount)
-        .sign(privateKeys);
-    console.log(transaction)
+    // var transaction = new bitcore.Transaction()
+    //     .from(utxo, publicKeys, 2)
+    //     .to(to, amount)
+    //     .sign(privateKeys);
+    // console.log(transaction)
 
     /////////////////////////////////////////////////////////////////////
-    // let abi = require('ethereumjs-abi')
-    // let web3 = require('web3')
+    let abi = require('ethereumjs-abi')
+    let web3 = require('web3')
     let bytes32;
     let etalonBytes32 = "0x0000000000000000000000000000000000000000000000000000000000000000"
-    let password = "01061995andrii111"
-    // passwordToSecret(password)
+    let password = "1234"
+    stringToSHA(password)
     
-    function convertToBytes32(string){
+    function stringToBytes32(string){
         var result = web3.utils.fromAscii(string);
         if(result.length != etalonBytes32.length){
             let length = etalonBytes32.length - result.length
@@ -98,11 +98,24 @@ let amount = 490000
         return string
     }
 
-    function passwordToSecret(password){
-        console.log(password)
-        let bytes32 = convertToBytes32(password)
+    function bytes32ToSHA(bytes32){
+        let sha256 = abi.soliditySHA256([ "bytes32" ], [bytes32])
+        sha256 = "0x"+sha256.toString("hex")
+        return sha256;
+    }
+
+    function stringToSHA(string){
+        let bytes32 = stringToBytes32(string)
         console.log(bytes32)
-        let sha256 = abi.soliditySHA256([ "bytes32" ], [abi.soliditySHA256([ "bytes32" ], [bytes32])])
-        sha256 = sha256.toString("hex")
-        console.log("0x"+sha256)
+        let sha256 = abi.soliditySHA256([ "bytes32" ], [bytes32]) // SHA
+        sha256 = "0x"+sha256.toString("hex")
+        console.log(sha256)
+        return sha256;
+    }
+
+    function stringTo2SHA(string){
+        let bytes32 = stringToBytes32(string)
+        let sha256 = abi.soliditySHA256([ "bytes32" ], [abi.soliditySHA256([ "bytes32" ], [bytes32])]) // 2SHA
+        sha256 = "0x"+sha256.toString("hex")
+        return sha256;
     }
