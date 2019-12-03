@@ -117,7 +117,11 @@ contract AtomicSwap {
             result := mload(add(source, 32))
         }
     }
-    
+
+    function bytes32ToSHA256(bytes32 _secret) public view returns(bytes32) {
+        return sha256(abi.encodePacked(_secret));
+    }
+ 
     function bytes32To2SHA256(bytes32 _secret) public view returns(bytes32) {
         return sha256(abi.encodePacked(sha256(abi.encodePacked(_secret))));
     }
