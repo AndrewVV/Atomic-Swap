@@ -1,2 +1,3 @@
-# atomic-swap-eth
-Atomic swap smart contract ETH VS bitcoin scrypt BTC
+# atomic-swap
+Atomic swap 
+Smart Contract ETH VS Bitcoin Scrypt BTC
