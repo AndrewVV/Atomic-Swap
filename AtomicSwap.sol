@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity 0.6.4;
 
 contract AtomicSwap {
 
@@ -45,9 +45,7 @@ contract AtomicSwap {
 
     modifier isRedeemable(bytes32 _hashedSecret, bytes32 _secret) {
         require(block.timestamp <= swaps[_hashedSecret].initTimestamp + swaps[_hashedSecret].refundTime, "refundTime has already come");
-        // require(sha256(abi.encodePacked(sha256(abi.encodePacked(_secret)))) == _hashedSecret, "secret is not correct"); // 2SHA
-        require(sha256(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct"); // SHA
-        // require(ripemd160(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct");
+        require(sha256(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct");
         _;
     }
 
@@ -109,7 +107,7 @@ contract AtomicSwap {
         swaps[_hashedSecret].initiator.transfer(swaps[_hashedSecret].value);
     }
     
-    function stringToBytes32(string memory source) public view returns (bytes32 result) {
+    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
         bytes memory tempEmptyStringTest = bytes(source);
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
@@ -119,36 +117,32 @@ contract AtomicSwap {
         }
     }
 
-    function bytes32ToSHA256(bytes32 _secret) public view returns(bytes32) {
+    function bytes32ToSHA256(bytes32 _secret) public pure returns(bytes32) {
         return sha256(abi.encodePacked(_secret));
     }
  
-    function bytes32To2SHA256(bytes32 _secret) public view returns(bytes32) {
+    function bytes32To2SHA256(bytes32 _secret) public pure returns(bytes32) {
         return sha256(abi.encodePacked(sha256(abi.encodePacked(_secret))));
     }
     
-    function bytes32ToRipemd160 (bytes32 _secret) public view returns(bytes20) {
+    function bytes32ToRipemd160 (bytes32 _secret) public pure returns(bytes20) {
         return ripemd160(abi.encodePacked(_secret));
     }
     
-    function stringToRipemd160 (string memory _secret) public view returns(bytes20) {
+    function stringToRipemd160 (string memory _secret) public pure returns(bytes20) {
         return ripemd160(abi.encodePacked(_secret));
     }
     
-    function stringToSHA256(string memory source) public view returns(bytes32) {
+    function stringToSHA256(string memory source) public pure returns(bytes32) {
         return sha256(abi.encodePacked(source));
     }
     
-    function stringTo2SHA256(string memory source) public view returns(bytes32) {
+    function stringTo2SHA256(string memory source) public pure returns(bytes32) {
         return sha256(abi.encodePacked(sha256(abi.encodePacked(source))));
     }
     
     function getTimestamp() public view returns(uint256) {
         return block.timestamp;
-    }
-    
-    function getTimestampPlusHour() public view returns(uint256) {
-        return block.timestamp+3600;
     }
     
     function getBalanceSwap(bytes32 _hashedSecret) public view returns (uint256) {
