@@ -90,7 +90,7 @@ contract AtomicSwap is Ownable {
 
     mapping(bytes32 => Swap) public swaps;
     
-    uint8 public feePercent;
+    uint16 public feePercent;
     uint256 public feeAmount;
     
     constructor() public {
@@ -146,7 +146,7 @@ contract AtomicSwap is Ownable {
         swaps[_hashedSecret].initiator = msg.sender;
         swaps[_hashedSecret].participant = _participant;
         swaps[_hashedSecret].value = msg.value;
-        swaps[_hashedSecret].fee = msg.value.div(100).mul(feePercent);
+        swaps[_hashedSecret].fee = msg.value.div(10000).mul(feePercent);
         swaps[_hashedSecret].initiated = true;
 
         emit Initiated(
@@ -183,8 +183,9 @@ contract AtomicSwap is Ownable {
         return true;
     }
     
-    function changeFeePercent(uint8 _fee) public onlyOwner {
-        require(_fee >=0 && _fee <= 100, "fee must be from 0 to 100");
+    function changeFeePercent(uint16 _fee) public onlyOwner {
+        // 1% = 100;
+        require(_fee >=0 && _fee <= 10000, "fee must be from 0 to 10000");
         feePercent = _fee;
     }
     
