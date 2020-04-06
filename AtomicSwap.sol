@@ -115,12 +115,11 @@ contract AtomicSwap is Ownable {
     event WithdrawFee(address indexed _owner, uint256 amount);
 
     modifier isRefundable(bytes32 _hashedSecret) {
-        require(block.timestamp > swaps[_hashedSecret].initTimestamp + swaps[_hashedSecret].refundTime, "refundTime has not come");
+        require(block.timestamp > swaps[_hashedSecret].refundTime, "refundTime has not come");
         _;
     }
 
     modifier isRedeemable(bytes32 _hashedSecret, bytes32 _secret) {
-        require(block.timestamp <= swaps[_hashedSecret].initTimestamp + swaps[_hashedSecret].refundTime, "refundTime has already come");
         require(sha256(abi.encodePacked(_secret)) == _hashedSecret, "secret is not correct");
         _;
     }
